@@ -5,33 +5,28 @@ import { DUMMY } from "./jsons/TEST_DUMMY";
 export type Question = {
   category: string;
   correct_answers: string[];
-  difficulty: string;
   incorrect_answers: string[];
   question: string;
   type: string;
+  checked_answers: string[];
+  star: boolean;
 };
 
 export type QuestionState = Question & { answers: string[] };
 
-export enum Difficulty {
-  EASY = "easy",
-  MEDIUM = "medium",
-  HARD = "hard",
-}
-
-export const fetchQuizQuestions = async (
-  amount: number,
-  difficulty: Difficulty
-) => {
-  // const endpoint = `https://opentdb.com/api.php?amount=${amount}&difficulty=${difficulty}&type=multiple`;
-  // const data = await (await fetch(endpoint)).json();
+export const fetchQuizQuestions = async () => {
   const data = DUMMY
 
-  return data.results.map((question: Question) => ({
+  const questionList = data.test_questions.map((question: Question) => ({
     ...question,
     answers: shuffleArray([
       ...question.incorrect_answers,
       ...question.correct_answers,
-    ]),
+    ],)
   }));
+
+  return {
+    test_time: data.test_time, 
+    questionList
+  }
 };

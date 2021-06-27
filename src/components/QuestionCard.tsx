@@ -1,23 +1,27 @@
 // import { Wrapper, ButtonWrapper } from "./QuestionCard.styles";
-import { Card, CardContent, List, ListItem, Checkbox } from "@material-ui/core";
+import { List } from "@material-ui/core";
 import React, { useState } from "react";
 import { AnswerObject } from "../App";
 import Buttons from "./Buttons";
 import ProgressBar from "./ProgressBar";
+import Answer from "./Answer";
 
 type Props = {
   question: string;
   answers: string[];
-  callback: (answerList: Array<string>) => void;
+  callback: (number:number, answerList: Array<string>) => void;
   userAnswer: AnswerObject | undefined;
-  changeAnswers: (oldAnswer:AnswerObject, newAnswers: Array<string>) => void;
+  changeAnswers: (oldAnswer: AnswerObject, newAnswers: Array<string>) => void;
   questionNr: number;
   totalQuestions: number;
   nextQuestion: (e: React.MouseEvent<HTMLButtonElement>) => void;
   prevQuestion: (e: React.MouseEvent<HTMLButtonElement>) => void;
   addStar: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  stopTest: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  stopTest: (stopTime:string) => void;
   maxTime: string;
+  offsetTime: string;
+  checkedAnswers: string[];
+  isStar: boolean;
 };
 
 const QuestionCard: React.FC<Props> = ({
@@ -33,26 +37,28 @@ const QuestionCard: React.FC<Props> = ({
   addStar,
   stopTest,
   maxTime,
+  offsetTime,
+  checkedAnswers,
+  isStar,
 }) => {
-  const [answerList, setAnswerList] = useState<string[]>([]);
+  const [checkedItems, setCheckedItems] = useState(checkedAnswers.reduce((pre, answer) => {
+    return {...pre, [answer]: true}
+  }, {}));
+
   const checkboxHandler = (event: React.FormEvent<HTMLInputElement>) => {
     const checkbox = event.currentTarget;
-
-    // oncheck
-    checkbox.checked && setAnswerList([...answerList, checkbox.value]);
-
-    // uncheck
-    if (!checkbox.checked) {
-      setAnswerList((prev) =>
-        prev.filter((answer) => answer !== checkbox.value)
-      );
-      userAnswer && changeAnswers(userAnswer, userAnswer.answerList.filter((answer) => answer !== checkbox.value))
-    }
+    setCheckedItems({
+      ...checkedItems,
+      [checkbox.value]: checkbox.checked
+    })
   };
 
   const saveAnswer = () => {
-    callback(answerList);
-    setAnswerList([]);
+    const dataArray = Object.entries(checkedItems).reduce((pre, [key, value]) => {
+      value && pre.push(key)
+      return pre
+    },[] as string[])
+    callback(questionNr, dataArray);
   };
 
   return (
@@ -62,49 +68,28 @@ const QuestionCard: React.FC<Props> = ({
       </p>
       <p dangerouslySetInnerHTML={{ __html: question }} />
       <List>
-        {answers.map((answer) => (
-          <ListItem key={answer} style={{ display: "inline-block" }}>
-            <Card style={{ display: "flex" }}>
-              <Checkbox
-                checked={
-                  userAnswer &&
-                  !!userAnswer.answerList.find((el) => el === answer)
-                }
-                // disabled={!!userAnswer}
-                value={answer}
-                onChange={checkboxHandler}
-                // onClick={callback}
-              ></Checkbox>
-              <CardContent>
-                <span dangerouslySetInnerHTML={{ __html: answer }} />
-              </CardContent>
-            </Card>
-          </ListItem>
+        {answers.map((answer, index) => (
+          <Answer
+            id={index}
+            key={answer}
+            userAnswer={userAnswer}
+            answer={answer}
+            onCheckHandler={checkboxHandler}
+            checkedAnswers={checkedAnswers}
+          />
         ))}
       </List>
-      <button
-        onClick={(event) => {
-          saveAnswer();
-          nextQuestion(event);
-        }}
-      >
-        Next Question
-      </button>
-      <button
-        onClick={(event) => {
-          prevQuestion(event);
-        }}
-      >
-        Prev Question
-      </button>
       <hr />
-      <ProgressBar maxTime={maxTime} />
+      <ProgressBar maxTime={maxTime} offsetTime={offsetTime} />
       <Buttons
         saveAnswer={saveAnswer}
         nextQuestion={nextQuestion}
         prevQuestion={prevQuestion}
         addStar={addStar}
         stopTest={stopTest}
+        maxTime={maxTime}
+        offsetTime={offsetTime}
+        isStar={isStar}
       />
     </React.Fragment>
   );
