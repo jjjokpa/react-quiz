@@ -1,7 +1,7 @@
 // import { Wrapper, ButtonWrapper } from "./QuestionCard.styles";
 import { List } from "@material-ui/core";
-import React, { useState } from "react";
-import { AnswerObject } from "../App";
+import React, { useState, useEffect } from "react";
+import { AnswerObject } from '../pages/TestStart'
 import Buttons from "./Buttons";
 import ProgressBar from "./ProgressBar";
 import Answer from "./Answer";
@@ -41,9 +41,20 @@ const QuestionCard: React.FC<Props> = ({
   checkedAnswers,
   isStar,
 }) => {
-  const [checkedItems, setCheckedItems] = useState(checkedAnswers.reduce((pre, answer) => {
-    return {...pre, [answer]: true}
-  }, {}));
+  const [checkedItems, setCheckedItems] = useState({});
+
+  useEffect(() => {
+    if (checkedAnswers.length > 0) {
+      const selectCheckedItems = 
+      checkedAnswers.reduce((pre, answer) => {
+        return {...pre, [answer]: true}
+      }, {});
+      setCheckedItems(selectCheckedItems);
+    } else {
+      setCheckedItems({})
+    }
+    
+  }, [questionNr])
 
   const checkboxHandler = (event: React.FormEvent<HTMLInputElement>) => {
     const checkbox = event.currentTarget;

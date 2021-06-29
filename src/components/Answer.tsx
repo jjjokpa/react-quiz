@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { ListItem, Card, Checkbox, CardContent } from "@material-ui/core";
-import { AnswerObject } from "../App";
+import { AnswerObject } from "../pages/TestStart";
 
 type Props = {
   id: number;
